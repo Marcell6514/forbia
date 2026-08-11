@@ -721,6 +721,11 @@ function countdownCompleteTransition(){
   }, 1300);
 }
 
+window.doSkipCountdown = function(){
+  clearInterval(countdownInterval);
+  countdownCompleteTransition();
+};
+
 function startMainExperience(){
   document.body.style.overflowY = "auto";
   introCue.classList.add("show");

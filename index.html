@@ -94,16 +94,6 @@ Marcell`,
       if(cs){ cs.classList.add("active"); }
     }
   };
-  window.doSkipCountdown = function(){
-    if(typeof window.__skipCountdownNow === "function"){
-      window.__skipCountdownNow();
-    } else {
-      var cs = document.getElementById("countdown-screen");
-      var st = document.getElementById("story");
-      if(cs){ cs.style.display = "none"; }
-      document.body.style.overflowY = "auto";
-    }
-  };
 </script>
 
 <style>
@@ -329,7 +319,6 @@ Marcell`,
     <button type="submit" class="enter-btn" data-cursor="soft">Enter</button>
   </form>
   <div class="granted" id="granted-text">Access granted.</div>
-  <div class="skip-hint" id="skip-password" data-cursor="soft" style="cursor:pointer; margin-top:20px;" onclick="window.doUnlockGate()">skip password (preview) →</div>
 </div>
 
 <!-- COUNTDOWN -->

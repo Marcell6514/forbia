@@ -522,7 +522,6 @@ Marcell`,
     <div class="cd-unit"><div class="cd-num" id="cd-mins">00</div><div class="cd-label">Minutes</div></div>
     <div class="cd-unit"><div class="cd-num" id="cd-secs">00</div><div class="cd-label">Seconds</div></div>
   </div>
-  <div class="skip-hint" id="skip-time" data-cursor="soft" style="cursor:pointer; margin-top:10px; opacity:.6;" onclick="window.doSkipCountdown()">skip time (preview) →</div>
 </div>
 
 <!-- INTRO CUE over heart -->
@@ -721,11 +720,6 @@ function countdownCompleteTransition(){
     startMainExperience();
   }, 1300);
 }
-
-window.doSkipCountdown = function(){
-  clearInterval(countdownInterval);
-  countdownCompleteTransition();
-};
 
 function startMainExperience(){
   document.body.style.overflowY = "auto";

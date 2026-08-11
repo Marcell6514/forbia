@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>For Bia — A Little World</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Marcellus&family=Great+Vibes&display=swap" rel="stylesheet">
+
+<!-- ======================= CONFIG ======================= -->
+<script>
+  window.SITE_CONFIG = {
+    fullName: "Lia Aulia Sari",
+    nickname: "Bia",
+    birthDateLabel: "13 Agustus 2006",
+    target: { year: 2026, month: 8, day: 13 }, // month is 1-indexed here
+    password: "9913",
+    colors: {
+      dark: "#2a0f1c",
+      deep: "#4a1330",
+      blush: "#f3c9d6",
+      dusty: "#c98aa0",
+      rose: "#e8a3bb",
+      gold: "#e6c391",
+      warmWhite: "#fdf6f3"
+    },
+    memories: [
+      { image: "images/bia1.jpg", caption: "one of my favorite memories" },
+      { image: "images/bia2.jpg", caption: "that smile" },
+      { image: "images/bia3.jpg", caption: "you" },
+      { image: "images/bia4.jpg", caption: "another little memory" },
+      { image: "images/bia5.jpg", caption: "my favorite moment" },
+      { image: "images/bia6.jpg", caption: "always this" }
+    ],
+    mainPortrait: "images/bia-main.jpg",
+    loveMessages: [
+      "I LOVE YOU", "BE HAPPY", "KEEP SMILING", "YOU ARE SPECIAL",
+      "MY FAVORITE PERSON", "ALWAYS BE YOU", "I'M GLAD I MET YOU",
+      "YOU DESERVE THE BEST", "HAPPY BIRTHDAY", "STAY HAPPY",
+      "YOU MEAN SO MUCH TO ME"
+    ],
+    letter: `Dear Bia,
+
+Happy Birthday.
+
+I made this little world for you, because sometimes words alone
+don't feel like enough.
+
+Semoga di umur yang baru ini kamu selalu sehat, dimudahkan dalam segala urusan, dan dikelilingi orang-orang yang tulus sayang sama kamu.
+
+Semoga semua hal yang kamu usahain pelan-pelan bisa tercapai, semua yang kamu lewatin bisa bikin kamu semakin kuat, dan semoga kamu selalu punya alasan buat bahagia.
+
+Makasih ya, untuk semua hal yang pernah kita lewatin selama ini. Aku bersyukur pernah punya kesempatan buat kenal, sayang, dan tumbuh bareng kamu.
+
+Aku nggak mau ngasih ucapan yang terlalu banyak atau bikin kamu ngerasa terbebani. Hari ini tentang kamu, jadi aku cuma berharap kamu bisa menikmati hari kamu dan bahagia.
+
+I hope this year brings you happiness, beautiful moments, and
+many reasons to smile.
+
+Happy 20th Birthday, Bia.
+
+With love,
+Marcell`,
+    audioFile: "audio/aboutyou.mp3",
+    finalLines: ["Happy Birthday, Bia.", "Lia Aulia Sari", "13 · 08 · 2026", "Made with love CELL."]
+  };
+
+  /* Global, inline-bound handlers for the password gate — attribute-based
+     (onsubmit/onclick) so they work the instant the DOM exists, with zero
+     dependency on addEventListener timing, external scripts, or load order. */
+  window.handlePasswordSubmit = function(ev){
+    if(ev && ev.preventDefault) ev.preventDefault();
+    var input = document.getElementById("password-input");
+    var val = (input.value || "").trim();
+    if(val === window.SITE_CONFIG.password){
+      window.doUnlockGate();
+    } else {
+      input.classList.remove("shake");
+      void input.offsetWidth;
+      input.classList.add("shake");
+      input.value = "";
+    }
+    return false;
+  };
+  window.doUnlockGate = function(){
+    if(window.__PASSWORD_OK) return;
+    window.__PASSWORD_OK = true;
+    if(typeof window.__unlockUI === "function"){
+      window.__unlockUI();
+    } else {
+      var ps = document.getElementById("password-screen");
+      var cs = document.getElementById("countdown-screen");
+      if(ps){ ps.style.display = "none"; }
+      if(cs){ cs.classList.add("active"); }
+    }
+  };
+  window.doSkipCountdown = function(){
+    if(typeof window.__skipCountdownNow === "function"){
+      window.__skipCountdownNow();
+    } else {
+      var cs = document.getElementById("countdown-screen");
+      var st = document.getElementById("story");
+      if(cs){ cs.style.display = "none"; }
+      document.body.style.overflowY = "auto";
+    }
+  };
+</script>
+
+<style>
+  :root{
+    --dark:#2a0f1c; --deep:#4a1330; --blush:#f3c9d6; --dusty:#c98aa0;
+    --rose:#e8a3bb; --gold:#e6c391; --warm:#fdf6f3;
+  }
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0; background:var(--dark); color:var(--warm);
+    font-family:'Cormorant Garamond', serif; overflow-x:hidden;
+    height:100%; width:100%;
+  }
+  ::selection{ background:var(--rose); color:var(--dark); }
+
+  #three-canvas{
+    position:fixed; inset:0; width:100vw; height:100vh; z-index:1;
+    display:block;
+  }
+
+  .vignette{
+    position:fixed; inset:0; z-index:2; pointer-events:none;
+    background:radial-gradient(ellipse at center, rgba(0,0,0,0) 40%, rgba(20,4,12,0.55) 100%);
+  }
+
+  /* ---------- custom cursor ---------- */
+  .cursor-halo, .cursor-dot{
+    position:fixed; top:0; left:0; border-radius:50%; pointer-events:none;
+    z-index:9999; transform:translate(-50%,-50%);
+    transition:width .25s ease, height .25s ease, background .25s ease, border-color .25s ease;
+  }
+  .cursor-dot{
+    width:6px; height:6px; background:var(--warm); box-shadow:0 0 8px 2px rgba(253,246,243,.8);
+  }
+  .cursor-halo{
+    width:30px; height:30px; border:1px solid rgba(232,163,187,.7);
+    box-shadow:0 0 20px 4px rgba(232,163,187,.25);
+  }
+  .cursor-halo.hover-heart{ width:54px; height:54px; border-color:var(--rose); box-shadow:0 0 30px 8px rgba(232,163,187,.45); }
+  .cursor-halo.hover-soft{ width:46px; height:46px; border-color:var(--gold); }
+  body.no-custom-cursor, body.no-custom-cursor *{ cursor:auto !important; }
+  body.no-custom-cursor .cursor-dot, body.no-custom-cursor .cursor-halo{ display:none; }
+  body:not(.no-custom-cursor){ cursor:none; }
+  body:not(.no-custom-cursor) a, body:not(.no-custom-cursor) button, body:not(.no-custom-cursor) [data-cursor]{ cursor:none; }
+
+  .trail-particle{
+    position:fixed; top:0; left:0; pointer-events:none; z-index:9998;
+    border-radius:50%; opacity:.9; will-change:transform,opacity;
+  }
+  .burst-heart{
+    position:fixed; top:0; left:0; pointer-events:none; z-index:9998; font-size:14px;
+    color:var(--rose); will-change:transform,opacity;
+  }
+
+  /* ---------- shared overlay layer ---------- */
+  .overlay{
+    position:fixed; inset:0; z-index:20;
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column; text-align:center; padding:24px;
+  }
+
+  /* ---------- password gate ---------- */
+  #password-screen{
+    background:radial-gradient(ellipse at 50% 30%, rgba(74,19,48,.55), rgba(20,4,10,.92) 75%);
+    transition:opacity 1.4s ease;
+  }
+  .eyebrow{
+    font-family:'Marcellus', serif; letter-spacing:.35em; text-transform:uppercase;
+    font-size:12px; color:var(--blush); opacity:.85; margin-bottom:18px;
+  }
+  .headline{
+    font-size:clamp(22px,4vw,34px); font-weight:500; color:var(--warm); margin:0 0 34px;
+    letter-spacing:.02em;
+  }
+  #password-form{ display:flex; flex-direction:column; align-items:center; gap:16px; }
+  #password-input{
+    background:transparent; border:none; border-bottom:1px solid rgba(253,246,243,.4);
+    color:var(--warm); font-family:'Marcellus',serif; font-size:26px; letter-spacing:.6em;
+    text-align:center; width:220px; padding:10px 0; outline:none;
+  }
+  #password-input:focus{ border-bottom-color:var(--rose); }
+  #password-input.shake{ animation:shakeIt .45s; border-bottom-color:#e37d92; }
+  @keyframes shakeIt{
+    0%,100%{ transform:translateX(0); } 20%{ transform:translateX(-10px); }
+    40%{ transform:translateX(9px); } 60%{ transform:translateX(-6px); } 80%{ transform:translateX(4px); }
+  }
+  .enter-btn{
+    margin-top:6px; background:transparent; border:1px solid var(--rose); color:var(--warm);
+    padding:9px 26px; border-radius:30px; font-family:'Marcellus',serif; font-size:12px;
+    letter-spacing:.2em; text-transform:uppercase; transition:all .3s ease;
+  }
+  .enter-btn:hover{ background:rgba(232,163,187,.18); box-shadow:0 0 20px rgba(232,163,187,.3); }
+  .granted{
+    font-family:'Marcellus',serif; letter-spacing:.3em; text-transform:uppercase;
+    font-size:13px; color:var(--gold); margin-top:22px; opacity:0; transition:opacity .8s ease;
+  }
+  .granted.show{ opacity:1; }
+
+  /* ---------- countdown ---------- */
+  #countdown-screen{ opacity:0; pointer-events:none; transition:opacity 1.2s ease; }
+  #countdown-screen.active{ opacity:1; pointer-events:all; }
+  .cd-sub{ font-size:16px; color:var(--blush); opacity:.85; margin-bottom:26px; font-style:italic; }
+  .cd-grid{ display:flex; gap:clamp(14px,3vw,34px); }
+  .cd-unit{ display:flex; flex-direction:column; align-items:center; min-width:64px; }
+  .cd-num{
+    font-family:'Marcellus',serif; font-size:clamp(30px,6vw,54px); color:var(--warm);
+    text-shadow:0 0 20px rgba(232,163,187,.5);
+  }
+  .cd-label{ font-size:11px; letter-spacing:.25em; text-transform:uppercase; color:var(--dusty); margin-top:6px; }
+  .skip-hint{ margin-top:38px; font-size:12px; letter-spacing:.15em; color:rgba(253,246,243,.55); }
+
+  /* ---------- intro cue over heart ---------- */
+  #intro-cue{
+    position:fixed; left:0; right:0; bottom:6vh; z-index:15; text-align:center;
+    opacity:0; transition:opacity 1.4s ease; pointer-events:none;
+  }
+  #intro-cue.show{ opacity:1; }
+  #intro-cue .for-someone{ font-family:'Great Vibes', cursive; font-size:30px; color:var(--warm); margin-bottom:10px; }
+  #intro-cue .scroll-cta{ font-size:12px; letter-spacing:.3em; text-transform:uppercase; color:var(--blush); }
+  .scroll-arrow{ margin-top:10px; font-size:16px; animation:bob 2s ease-in-out infinite; }
+  @keyframes bob{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(8px);} }
+
+  /* ---------- scroll spacer / story ---------- */
+  #story{ position:relative; z-index:10; width:100%; }
+  .act{ position:relative; height:100vh; }
+  #act-heart{ height:130vh; }
+  #act-memories{ height:420vh; }
+  #act-envelope{ height:140vh; }
+  #act-letter{ height:180vh; }
+  #act-universe{ height:260vh; }
+  #act-final{ height:160vh; }
+
+  .caption-tag{
+    position:absolute; z-index:16; font-family:'Great Vibes',cursive; font-size:26px;
+    color:var(--warm); opacity:0; transition:opacity .5s ease; text-shadow:0 0 12px rgba(0,0,0,.4);
+    pointer-events:none;
+  }
+
+  /* ---------- letter overlay ---------- */
+  #letter-wrap{
+    position:fixed; inset:0; z-index:18; display:flex; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none; transition:opacity .9s ease;
+  }
+  #letter-wrap.show{ opacity:1; pointer-events:all; }
+  .letter-paper{
+    width:min(560px,88vw); max-height:78vh; overflow-y:auto;
+    background:linear-gradient(180deg, #fffaf7, #fdf1ee);
+    border:1px solid rgba(201,138,160,.5); border-radius:4px;
+    box-shadow:0 30px 80px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.4) inset;
+    padding:clamp(26px,5vw,52px); color:#5a2438; position:relative;
+  }
+  .letter-paper::before{
+    content:"❀"; position:absolute; top:18px; right:22px; color:var(--dusty); font-size:20px; opacity:.6;
+  }
+  .letter-dear{ font-family:'Great Vibes', cursive; font-size:34px; color:#8a2c4c; margin:0 0 18px; }
+  .letter-body{ font-size:18px; line-height:1.8; white-space:pre-wrap; font-weight:500; }
+  .letter-scroll-hint{ text-align:center; margin-top:16px; font-size:11px; letter-spacing:.2em; color:#a56; text-transform:uppercase; opacity:.7; }
+  .letter-close{
+    position:absolute; top:12px; right:14px; width:30px; height:30px; border-radius:50%;
+    border:1px solid rgba(138,44,76,.35); background:rgba(255,255,255,.5); color:#8a2c4c;
+    font-size:15px; line-height:1; display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:all .2s ease; z-index:2;
+  }
+  .letter-close:hover{ background:#8a2c4c; color:#fff8f5; transform:scale(1.06); }
+
+  /* ---------- final overlay ---------- */
+  #final-wrap{
+    position:fixed; inset:0; z-index:18; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; opacity:0; transition:opacity 1.6s ease; pointer-events:none;
+  }
+  #final-wrap.show{ opacity:1; }
+  .final-line{
+    opacity:0; transform:translateY(14px); transition:opacity 1s ease, transform 1s ease;
+    margin:6px 0;
+  }
+  .final-line.reveal{ opacity:1; transform:translateY(0); }
+  .final-line:nth-child(1){ font-family:'Great Vibes',cursive; font-size:clamp(30px,5.6vw,52px); color:var(--warm); }
+  .final-line:nth-child(2){ font-family:'Marcellus',serif; font-size:clamp(16px,2.4vw,22px); letter-spacing:.25em; text-transform:uppercase; color:var(--blush); }
+  .final-line:nth-child(3){ font-family:'Marcellus',serif; font-size:14px; letter-spacing:.3em; color:var(--gold); }
+  .final-line:nth-child(4){ font-family:'Cormorant Garamond',serif; font-style:italic; font-size:15px; color:rgba(253,246,243,.7); }
+
+  /* ---------- music control ---------- */
+  #music-btn{
+    position:fixed; bottom:22px; right:22px; z-index:60; width:42px; height:42px; border-radius:50%;
+    border:1px solid rgba(253,246,243,.4); background:rgba(42,15,28,.5); backdrop-filter:blur(6px);
+    color:var(--warm); font-size:16px; display:flex; align-items:center; justify-content:center;
+    opacity:0; transition:opacity .8s ease, transform .3s ease;
+  }
+  #music-btn.show{ opacity:1; }
+  #music-btn:hover{ transform:scale(1.08); }
+
+  /* ---------- progress rail (subtle) ---------- */
+  #rail{
+    position:fixed; right:16px; top:50%; transform:translateY(-50%); z-index:19;
+    width:2px; height:120px; background:rgba(253,246,243,.15); border-radius:2px; overflow:hidden;
+    opacity:0; transition:opacity .8s ease;
+  }
+  #rail.show{ opacity:1; }
+  #rail-fill{ width:100%; background:linear-gradient(180deg,var(--rose),var(--gold)); height:0%; }
+
+  @media (max-width:720px){
+    .letter-body{ font-size:16px; }
+    .cd-grid{ gap:12px; }
+    #rail{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="three-canvas"></canvas>
+<div class="vignette"></div>
+
+<!-- custom cursor -->
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-halo" id="cursorHalo"></div>
+
+<!-- PASSWORD -->
+<div class="overlay" id="password-screen">
+  <div class="eyebrow">A little surprise awaits you</div>
+  <div class="headline">Enter the password</div>
+  <form id="password-form" autocomplete="off" onsubmit="return window.handlePasswordSubmit(event)">
+    <input id="password-input" type="password" inputmode="numeric" maxlength="8" data-cursor="soft" />
+    <button type="submit" class="enter-btn" data-cursor="soft">Enter</button>
+  </form>
+  <div class="granted" id="granted-text">Access granted.</div>
+  <div class="skip-hint" id="skip-password" data-cursor="soft" style="cursor:pointer; margin-top:20px;" onclick="window.doUnlockGate()">skip password (preview) →</div>
+</div>
+
+<!-- COUNTDOWN -->
+<div class="overlay" id="countdown-screen">
+  <div class="eyebrow">For Bia</div>
+  <div class="cd-sub">Something special is almost here.</div>
+  <div class="cd-grid">
+    <div class="cd-unit"><div class="cd-num" id="cd-days">00</div><div class="cd-label">Days</div></div>
+    <div class="cd-unit"><div class="cd-num" id="cd-hours">00</div><div class="cd-label">Hours</div></div>
+    <div class="cd-unit"><div class="cd-num" id="cd-mins">00</div><div class="cd-label">Minutes</div></div>
+    <div class="cd-unit"><div class="cd-num" id="cd-secs">00</div><div class="cd-label">Seconds</div></div>
+  </div>
+
+  <div class="skip-hint" id="skip-countdown" data-cursor="soft" style="cursor:pointer; margin-top:10px; opacity:.6;" onclick="window.doSkipCountdown()">skip countdown (preview) →</div>
+</div>
+
+<!-- INTRO CUE over heart -->
+<div id="intro-cue">
+  <div class="for-someone">For someone very special.</div>
+  <div class="scroll-cta">Scroll to begin</div>
+  <div class="scroll-arrow">↓</div>
+</div>
+
+<!-- SCROLL STORY (spacers driving the 3D world) -->
+<div id="story">
+  <div class="act" id="act-heart"></div>
+  <div class="act" id="act-memories"></div>
+  <div class="act" id="act-envelope"></div>
+  <div class="act" id="act-letter"></div>
+  <div class="act" id="act-universe"></div>
+  <div class="act" id="act-final"></div>
+</div>
+
+<!-- LETTER OVERLAY -->
+<div id="letter-wrap">
+  <div class="letter-paper">
+    <button class="letter-close" type="button" onclick="window.__closeLetterCard && window.__closeLetterCard()" title="Close">✕</button>
+    <div class="letter-dear">Dear Bia,</div>
+    <div class="letter-body" id="letter-body"></div>
+    <div class="letter-scroll-hint">keep scrolling when you're ready</div>
+  </div>
+</div>
+
+<!-- FINAL OVERLAY -->
+<div id="final-wrap">
+  <div class="final-line"></div>
+  <div class="final-line"></div>
+  <div class="final-line"></div>
+  <div class="final-line"></div>
+</div>
+
+<button id="music-btn" title="music">♪</button>
+<div id="rail"><div id="rail-fill"></div></div>
+<audio id="bg-audio" loop preload="none"></audio>
+
+<!-- URL-based quick preview: ?skip=1 skips password, ?skip=2 skips password + countdown -->
+<script>
+(function(){
+  if(/[?&]skip=1/.test(location.search) || /[?&]skip=2/.test(location.search)){
+    window.doUnlockGate();
+  }
+  if(/[?&]skip=2/.test(location.search)){
+    var tries = 0;
+    var poll = setInterval(function(){
+      tries++;
+      if(document.getElementById("countdown-screen").classList.contains("active")){
+        clearInterval(poll);
+        window.doSkipCountdown();
+      } else if(tries>80){ clearInterval(poll); }
+    }, 100);
+  }
+})();
+</script>
+
+<!-- ======================= LIBS ======================= -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" crossorigin="anonymous"></script>
+
+<!-- ======================= APP ======================= -->
+<script>
+(function(){
+"use strict";
+const CFG = window.SITE_CONFIG;
+const isTouch = window.matchMedia("(pointer:coarse)").matches;
+const isMobile = window.innerWidth < 820 || isTouch;
+
+/* ============================================================
+   0. CUSTOM CURSOR + LOVE TRAIL
+============================================================ */
+(function cursorModule(){
+  if(isTouch){ document.body.classList.add("no-custom-cursor"); return; }
+  const dot = document.getElementById("cursorDot");
+  const halo = document.getElementById("cursorHalo");
+  let mx=innerWidth/2,my=innerHeight/2, hx=mx,hy=my, dx=mx,dy=my;
+  window.addEventListener("mousemove", e=>{ mx=e.clientX; my=e.clientY; maybeSpawnTrail(e.clientX,e.clientY); });
+  function raf(){
+    dx += (mx-dx)*0.35; dy += (my-dy)*0.35;
+    hx += (mx-hx)*0.14; hy += (my-hy)*0.14;
+    dot.style.left=dx+"px"; dot.style.top=dy+"px";
+    halo.style.left=hx+"px"; halo.style.top=hy+"px";
+    requestAnimationFrame(raf);
+  }
+  raf();
+
+  let lastTrail=0;
+  function maybeSpawnTrail(x,y){
+    const now=performance.now();
+    if(now-lastTrail<90) return;
+    lastTrail=now;
+    const kindRoll = Math.random();
+    if(kindRoll<0.65){
+      const p=document.createElement("div");
+      p.className="trail-particle";
+      const size = 3+Math.random()*4;
+      p.style.width=size+"px"; p.style.height=size+"px";
+      p.style.background = Math.random()<0.5 ? "#f3c9d6" : "#e6c391";
+      p.style.left=x+"px"; p.style.top=y+"px";
+      p.style.boxShadow="0 0 8px 2px rgba(232,163,187,.5)";
+      document.body.appendChild(p);
+      const ang = Math.random()*Math.PI*2, dist=14+Math.random()*20;
+      gsap.to(p,{ x:Math.cos(ang)*dist, y:Math.sin(ang)*dist-18, opacity:0, duration:1+Math.random()*.6, ease:"power1.out",
+        onComplete:()=>p.remove() });
+    } else if(kindRoll<0.85){
+      spawnHeart(x,y,10);
+    } else {
+      spawnPetal(x,y);
+    }
+  }
+  function spawnHeart(x,y,size){
+    const h=document.createElement("div");
+    h.className="burst-heart"; h.textContent="❤";
+    h.style.left=x+"px"; h.style.top=y+"px"; h.style.fontSize=size+"px"; h.style.color="#e8a3bb";
+    document.body.appendChild(h);
+    gsap.to(h,{ y:"-=26", opacity:0, rotate:(Math.random()*40-20), duration:1.1, ease:"power1.out", onComplete:()=>h.remove() });
+  }
+  function spawnPetal(x,y){
+    const p=document.createElement("div");
+    p.className="trail-particle";
+    p.style.width="8px"; p.style.height="5px"; p.style.borderRadius="60% 40% 60% 40%";
+    p.style.background="linear-gradient(135deg,#f7d8e2,#c98aa0)";
+    p.style.left=x+"px"; p.style.top=y+"px";
+    document.body.appendChild(p);
+    gsap.to(p,{ y:"+=22", x:"+="+(Math.random()*30-15), rotate:180*Math.random(), opacity:0, duration:1.4, ease:"power1.out", onComplete:()=>p.remove() });
+  }
+  window.__loveClickBurst = function(x,y){
+    const count = 5+Math.floor(Math.random()*7);
+    for(let i=0;i<count;i++){
+      setTimeout(()=>spawnHeart(x+(Math.random()*20-10), y+(Math.random()*20-10), 10+Math.random()*8), i*30);
+    }
+    for(let i=0;i<3;i++) setTimeout(()=>spawnPetal(x,y), i*50);
+  };
+  document.addEventListener("click", e=>window.__loveClickBurst(e.clientX,e.clientY));
+
+  document.querySelectorAll("[data-cursor]").forEach(el=>{
+    el.addEventListener("mouseenter", ()=>halo.classList.add(el.dataset.cursor==="heart"?"hover-heart":"hover-soft"));
+    el.addEventListener("mouseleave", ()=>halo.classList.remove("hover-heart","hover-soft"));
+  });
+})();
+
+/* ============================================================
+   1. PASSWORD GATE + COUNTDOWN + START/MUSIC (registered EARLY,
+      independent of the 3D world below, so the gate always works
+      even if WebGL/3D setup fails on some device/browser).
+============================================================ */
+const passwordScreen = document.getElementById("password-screen");
+const passwordForm = document.getElementById("password-form");
+const passwordInput = document.getElementById("password-input");
+const grantedText = document.getElementById("granted-text");
+const countdownScreen = document.getElementById("countdown-screen");
+const musicBtn = document.getElementById("music-btn");
+const bgAudio = document.getElementById("bg-audio");
+bgAudio.src = CFG.audioFile;
+const introCue = document.getElementById("intro-cue");
+const rail = document.getElementById("rail");
+let progress = 0; // 0..1 across the whole #story, read by the 3D world if it initialized
+
+/* password submit is handled by the minimal dependency-free script in <head>/<body> top,
+   which calls window.__unlockUI() on success. Wrong-password shake is handled there too. */
+window.__unlockUI = function(){
+  if(passwordScreen.style.display === "none") return; // already unlocked
+  grantedText.classList.add("show");
+  if(window.__loveClickBurst) window.__loveClickBurst(innerWidth/2, innerHeight/2);
+  setTimeout(()=>{
+    passwordScreen.style.opacity = "0";
+    setTimeout(()=>{ passwordScreen.style.display="none"; enterCountdown(); }, 1400);
+  }, 900);
+};
+function getTargetDate(){
+  const { year, month, day } = CFG.target;
+  return new Date(year, month-1, day, 0,0,0,0);
+}
+let countdownInterval = null;
+function enterCountdown(){
+  const target = getTargetDate();
+  const now = new Date();
+  if(now.getTime() >= target.getTime()){
+    startMainExperience();
+    return;
+  }
+  countdownScreen.classList.add("active");
+  tickCountdown();
+  countdownInterval = setInterval(tickCountdown, 1000);
+}
+function tickCountdown(){
+  const target = getTargetDate();
+  const now = new Date();
+  const diff = target.getTime() - now.getTime();
+  if(diff <= 0){
+    clearInterval(countdownInterval);
+    countdownCompleteTransition();
+    return;
+  }
+  const d = Math.floor(diff/86400000);
+  const h = Math.floor((diff%86400000)/3600000);
+  const m = Math.floor((diff%3600000)/60000);
+  const s = Math.floor((diff%60000)/1000);
+  document.getElementById("cd-days").textContent = String(d).padStart(2,"0");
+  document.getElementById("cd-hours").textContent = String(h).padStart(2,"0");
+  document.getElementById("cd-mins").textContent = String(m).padStart(2,"0");
+  document.getElementById("cd-secs").textContent = String(s).padStart(2,"0");
+}
+function countdownCompleteTransition(){
+  countdownScreen.style.opacity = "0";
+  setTimeout(()=>{
+    countdownScreen.style.display="none";
+    startMainExperience();
+  }, 1300);
+}
+window.__skipCountdownNow = function(){
+  clearInterval(countdownInterval);
+  countdownCompleteTransition();
+};
+
+function startMainExperience(){
+  document.body.style.overflowY = "auto";
+  introCue.classList.add("show");
+  musicBtn.classList.add("show");
+  rail.classList.add("show");
+  if(window.__scrollTriggerReady){
+    window.__scrollTriggerReady();
+  } else {
+    // 3D world not ready yet (still loading) or failed — poll briefly, else fall back to simple scroll
+    let tries = 0;
+    const poll = setInterval(()=>{
+      tries++;
+      if(window.__scrollTriggerReady){ clearInterval(poll); window.__scrollTriggerReady(); }
+      else if(tries>40){ clearInterval(poll); }
+    }, 100);
+  }
+}
+
+let musicOn = false;
+musicBtn.addEventListener("click", ()=>{
+  musicOn = !musicOn;
+  musicBtn.textContent = musicOn ? "❚❚" : "♪";
+  if(musicOn){ bgAudio.play().catch(()=>{}); } else { bgAudio.pause(); }
+});
+
+/* lock scroll until unlocked */
+document.body.style.overflowY = "hidden";
+
+/* ============================================================
+   2. THREE.JS WORLD (wrapped in try/catch so any WebGL/runtime
+      error here never blocks the password gate / countdown above)
+============================================================ */
+try{
+const canvas = document.getElementById("three-canvas");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, isMobile?1.5:2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x2a0f1c, 0.028);
+
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 200);
+camera.position.set(0,0,9);
+
+// lights
+scene.add(new THREE.AmbientLight(0xffd6e0, 0.55));
+const key = new THREE.DirectionalLight(0xfff0e6, 1.1);
+key.position.set(4,5,6); scene.add(key);
+const rim = new THREE.PointLight(0xe8a3bb, 2.2, 40);
+rim.position.set(-5,2,-4); scene.add(rim);
+const gold = new THREE.PointLight(0xe6c391, 1.2, 30);
+gold.position.set(3,-2,4); scene.add(gold);
+
+// soft round sprite texture (used for dust + petals glow)
+function makeSoftTexture(hex){
+  const c=document.createElement("canvas"); c.width=c.height=64;
+  const ctx=c.getContext("2d");
+  const g=ctx.createRadialGradient(32,32,0,32,32,32);
+  g.addColorStop(0, hex+"ff"); g.addColorStop(0.4, hex+"aa"); g.addColorStop(1, hex+"00");
+  ctx.fillStyle=g; ctx.fillRect(0,0,64,64);
+  const t=new THREE.CanvasTexture(c); return t;
+}
+const dustTex = makeSoftTexture("#f3c9d6");
+const goldTex = makeSoftTexture("#e6c391");
+
+/* ---- ambient dust / stars ---- */
+const dustCount = isMobile?150:320;
+const dustGeo = new THREE.BufferGeometry();
+const dustPos = new Float32Array(dustCount*3);
+for(let i=0;i<dustCount;i++){
+  dustPos[i*3]   = (Math.random()-0.5)*40;
+  dustPos[i*3+1] = (Math.random()-0.5)*40;
+  dustPos[i*3+2] = (Math.random()-0.5)*60 - 10;
+}
+dustGeo.setAttribute("position", new THREE.BufferAttribute(dustPos,3));
+const dustMat = new THREE.PointsMaterial({ size:0.12, map:dustTex, transparent:true, depthWrite:false, opacity:0.7, blending:THREE.AdditiveBlending });
+const dust = new THREE.Points(dustGeo, dustMat);
+scene.add(dust);
+
+/* ---- lily petal system (instanced) ---- */
+function petalShapeGeometry(){
+  const shape = new THREE.Shape();
+  shape.moveTo(0,0);
+  shape.bezierCurveTo(0.25,0.15, 0.25,0.55, 0,0.75);
+  shape.bezierCurveTo(-0.25,0.55, -0.25,0.15, 0,0);
+  return new THREE.ShapeGeometry(shape);
+}
+const petalGeo = petalShapeGeometry();
+const petalMat = new THREE.MeshStandardMaterial({
+  color:0xf3c9d6, emissive:0x7a2c44, emissiveIntensity:0.15,
+  side:THREE.DoubleSide, roughness:0.5, metalness:0.05, transparent:true, opacity:0.92
+});
+const PETAL_COUNT = isMobile?26:48;
+const petals = new THREE.InstancedMesh(petalGeo, petalMat, PETAL_COUNT);
+scene.add(petals);
+const petalData = [];
+const dummy = new THREE.Object3D();
+for(let i=0;i<PETAL_COUNT;i++){
+  const d = {
+    base: new THREE.Vector3((Math.random()-0.5)*22,(Math.random()-0.5)*16,(Math.random()-0.5)*26-4),
+    speed: 0.15+Math.random()*0.35,
+    rot: new THREE.Vector3(Math.random(),Math.random(),Math.random()),
+    rotSpeed: (Math.random()-0.5)*0.6,
+    scale: 0.35+Math.random()*0.55,
+    phase: Math.random()*Math.PI*2
+  };
+  petalData.push(d);
+}
+function updatePetals(t){
+  for(let i=0;i<PETAL_COUNT;i++){
+    const d=petalData[i];
+    const y = d.base.y + Math.sin(t*d.speed + d.phase)*1.4;
+    const x = d.base.x + Math.cos(t*d.speed*0.6 + d.phase)*0.6;
+    dummy.position.set(x, y, d.base.z);
+    dummy.rotation.set(d.rot.x + t*d.rotSpeed, d.rot.y + t*d.rotSpeed*0.7, d.rot.z);
+    dummy.scale.setScalar(d.scale);
+    dummy.updateMatrix();
+    petals.setMatrixAt(i, dummy.matrix);
+  }
+  petals.instanceMatrix.needsUpdate = true;
+}
+
+/* ---- 3D heart (procedural extrude) ---- */
+function heartShape(){
+  const s = new THREE.Shape();
+  const x=0,y=0;
+  s.moveTo(x,y+0.4);
+  s.bezierCurveTo(x,y+0.4, x-0.6,y-0.2, x-1,y+0.4);
+  s.bezierCurveTo(x-1.5,y+1.1, x-0.9,y+1.7, x,y+2.4);
+  s.bezierCurveTo(x+0.9,y+1.7, x+1.5,y+1.1, x+1,y+0.4);
+  s.bezierCurveTo(x+0.6,y-0.2, x,y+0.4, x,y+0.4);
+  return s;
+}
+const heartGeo = new THREE.ExtrudeGeometry(heartShape(), { depth:0.55, bevelEnabled:true, bevelThickness:0.12, bevelSize:0.1, bevelSegments:6, curveSegments:24 });
+heartGeo.center();
+heartGeo.rotateZ(Math.PI);
+heartGeo.scale(1.15,1.15,1.15);
+const heartMat = new THREE.MeshPhysicalMaterial({
+  color:0xe8557d, roughness:0.25, metalness:0.05, clearcoat:1, clearcoatRoughness:0.15,
+  emissive:0x4a0d22, emissiveIntensity:0.12
+});
+const heart = new THREE.Mesh(heartGeo, heartMat);
+heart.position.set(0,0,-2);
+scene.add(heart);
+
+const heartGlow = new THREE.PointLight(0xff9ec2, 3, 12);
+heartGlow.position.copy(heart.position);
+scene.add(heartGlow);
+
+/* orbiting particles around the heart */
+const orbitGeo = new THREE.BufferGeometry();
+const ORBIT_N = 60;
+const orbitPos = new Float32Array(ORBIT_N*3);
+orbitGeo.setAttribute("position", new THREE.BufferAttribute(orbitPos,3));
+const orbitMat = new THREE.PointsMaterial({ size:0.07, map:goldTex, transparent:true, depthWrite:false, opacity:0.9, blending:THREE.AdditiveBlending });
+const orbitPts = new THREE.Points(orbitGeo, orbitMat);
+scene.add(orbitPts);
+function updateOrbit(t, intensity){
+  const arr = orbitGeo.attributes.position.array;
+  for(let i=0;i<ORBIT_N;i++){
+    const a = (i/ORBIT_N)*Math.PI*2 + t*0.4;
+    const r = 1.6 + Math.sin(t*0.5+i)*0.25*intensity;
+    arr[i*3]   = heart.position.x + Math.cos(a)*r;
+    arr[i*3+1] = heart.position.y + Math.sin(a*1.3)*0.6 + Math.sin(t*0.7+i)*0.15;
+    arr[i*3+2] = heart.position.z + Math.sin(a)*r*0.6;
+  }
+  orbitGeo.attributes.position.needsUpdate = true;
+}
+
+/* ---- placeholder / real photo texture loader ---- */
+const texLoader = new THREE.TextureLoader();
+function loadPhotoTexture(path, caption, cb){
+  texLoader.load(path,
+    tex => { tex.encoding = THREE.sRGBEncoding; cb(tex); },
+    undefined,
+    () => cb(makePlaceholderTexture(caption))
+  );
+}
+function makePlaceholderTexture(caption){
+  const c=document.createElement("canvas"); c.width=512; c.height=640;
+  const ctx=c.getContext("2d");
+  const g=ctx.createLinearGradient(0,0,512,640);
+  g.addColorStop(0,"#e8b8c9"); g.addColorStop(0.5,"#d98fa8"); g.addColorStop(1,"#b0567a");
+  ctx.fillStyle=g; ctx.fillRect(0,0,512,640);
+  ctx.globalAlpha=0.18;
+  for(let i=0;i<40;i++){
+    ctx.beginPath();
+    ctx.ellipse(Math.random()*512, Math.random()*640, 30+Math.random()*40, 14+Math.random()*20, Math.random()*Math.PI, 0, Math.PI*2);
+    ctx.fillStyle="#ffffff"; ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  ctx.font="64px Georgia"; ctx.fillStyle="rgba(255,255,255,.85)"; ctx.textAlign="center";
+  ctx.fillText("❀", 256, 300);
+  ctx.font="italic 30px Georgia"; ctx.fillStyle="rgba(255,255,255,.9)";
+  ctx.fillText(caption || "a memory", 256, 380);
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding;
+  return t;
+}
+
+/* ---- polaroid group ---- */
+function buildPolaroid(mem){
+  const group = new THREE.Group();
+  const frameGeo = new THREE.BoxGeometry(2.0, 2.4, 0.06);
+  const frameMat = new THREE.MeshStandardMaterial({ color:0xfdf6f3, roughness:0.7 });
+  const frame = new THREE.Mesh(frameGeo, frameMat);
+  group.add(frame);
+
+  const photoGeo = new THREE.PlaneGeometry(1.7,1.7);
+  const photoMat = new THREE.MeshStandardMaterial({ color:0xffffff, roughness:0.55 });
+  const photo = new THREE.Mesh(photoGeo, photoMat);
+  photo.position.set(0,0.18,0.035);
+  group.add(photo);
+  loadPhotoTexture(mem.image, mem.caption, tex=>{ photoMat.map=tex; photoMat.needsUpdate=true; });
+
+  const edge = new THREE.Mesh(new THREE.BoxGeometry(2.02,2.42,0.02), new THREE.MeshStandardMaterial({ color:0xe8a3bb, roughness:0.6 }));
+  edge.position.z=-0.02; group.add(edge);
+
+  group.userData.caption = mem.caption;
+  return group;
+}
+const polaroidWaypoints = [];
+const polaroidGroups = [];
+CFG.memories.forEach((mem,i)=>{
+  const g = buildPolaroid(mem);
+  const side = i%2===0 ? -1 : 1;
+  const px = side*(1.6+Math.random()*0.8);
+  const py = (Math.random()-0.5)*1.6;
+  const pz = -6 - i*7;
+  g.position.set(px,py,pz);
+  g.rotation.y = side*0.35 + (Math.random()-0.5)*0.2;
+  g.rotation.z = (Math.random()-0.5)*0.12;
+  scene.add(g);
+  polaroidGroups.push(g);
+  polaroidWaypoints.push(new THREE.Vector3(px*0.35, py*0.5, pz+2.2));
+});
+const memStart = new THREE.Vector3(0,0.3,-1);
+const memEnd = new THREE.Vector3(0,0.2, polaroidGroups.length? polaroidGroups[polaroidGroups.length-1].position.z-4 : -46);
+const camPathPoints = [memStart, ...polaroidWaypoints, memEnd];
+const memCurve = new THREE.CatmullRomCurve3(camPathPoints, false, "catmullrom", 0.4);
+
+/* ---- distant lily silhouettes ---- */
+function buildFlower(scale, color){
+  const g = new THREE.Group();
+  const petalG = petalShapeGeometry();
+  const petalM = new THREE.MeshStandardMaterial({ color, roughness:0.5, side:THREE.DoubleSide, transparent:true, opacity:0.95 });
+  for(let i=0;i<6;i++){
+    const p = new THREE.Mesh(petalG, petalM);
+    p.rotation.z = (i/6)*Math.PI*2;
+    p.scale.setScalar(0.55);
+    g.add(p);
+  }
+  const center = new THREE.Mesh(new THREE.SphereGeometry(0.12,12,12), new THREE.MeshStandardMaterial({ color:0xe6c391, roughness:0.4 }));
+  g.add(center);
+  g.scale.setScalar(scale);
+  return g;
+}
+const distantFlowers = new THREE.Group();
+for(let i=0;i<14;i++){
+  const f = buildFlower(0.6+Math.random()*0.8, 0xe8a3bb);
+  f.position.set((Math.random()-0.5)*26, -3-Math.random()*2, -10-Math.random()*40);
+  f.rotation.x = -0.2;
+  distantFlowers.add(f);
+}
+scene.add(distantFlowers);
+
+/* ---- envelope ---- */
+const envGroup = new THREE.Group();
+const envZ = memEnd.z - 8;
+envGroup.position.set(0,0, envZ);
+const envMat = new THREE.MeshStandardMaterial({ color:0xf7e3d6, roughness:0.55 });
+const envBody = new THREE.Mesh(new THREE.BoxGeometry(2.6,1.8,0.08), envMat);
+envGroup.add(envBody);
+const flapShape = new THREE.Shape();
+flapShape.moveTo(-1.3,0); flapShape.lineTo(1.3,0); flapShape.lineTo(0,-1.1); flapShape.lineTo(-1.3,0);
+const flapGeo = new THREE.ShapeGeometry(flapShape);
+const flapMat = new THREE.MeshStandardMaterial({ color:0xf0d2c2, roughness:0.55, side:THREE.DoubleSide });
+const flap = new THREE.Mesh(flapGeo, flapMat);
+flap.position.set(0,0.9,0.045);
+envGroup.add(flap);
+const goldSeal = new THREE.Mesh(new THREE.CircleGeometry(0.14,24), new THREE.MeshStandardMaterial({ color:0xe6c391, metalness:0.4, roughness:0.3 }));
+goldSeal.position.set(0,0.15,0.05);
+envGroup.add(goldSeal);
+scene.add(envGroup);
+
+/* letter paper (3D, emerges from envelope) */
+const letterGeo = new THREE.PlaneGeometry(2.0,2.6);
+const letterMat = new THREE.MeshStandardMaterial({ color:0xfffaf7, roughness:0.9, side:THREE.DoubleSide });
+const letterMesh = new THREE.Mesh(letterGeo, letterMat);
+letterMesh.position.set(0,0,envZ+0.1);
+letterMesh.visible = false;
+scene.add(letterMesh);
+
+/* ---- photo universe: portrait + orbiting text + orbiting lilies ---- */
+const universeZ = envZ - 10;
+const portraitGroup = new THREE.Group();
+portraitGroup.position.set(0,0,universeZ);
+scene.add(portraitGroup);
+const portraitFrame = new THREE.Mesh(new THREE.BoxGeometry(2.6,3.2,0.1), new THREE.MeshStandardMaterial({ color:0xfdf6f3, roughness:0.6 }));
+portraitGroup.add(portraitFrame);
+const portraitPhoto = new THREE.Mesh(new THREE.PlaneGeometry(2.3,2.9), new THREE.MeshStandardMaterial({ color:0xffffff, roughness:0.5 }));
+portraitPhoto.position.z = 0.06;
+portraitGroup.add(portraitPhoto);
+loadPhotoTexture(CFG.mainPortrait, "Bia", tex=>{ portraitPhoto.material.map=tex; portraitPhoto.material.needsUpdate=true; });
+const portraitGlow = new THREE.PointLight(0xffd6e6, 2, 10);
+portraitGlow.position.set(0,0,universeZ+2);
+scene.add(portraitGlow);
+
+function makeTextSprite(text){
+  const c = document.createElement("canvas");
+  const pad=40; c.width=1024; c.height=220;
+  const ctx=c.getContext("2d");
+  ctx.font="600 84px 'Marcellus', Georgia, serif";
+  ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.shadowColor="rgba(232,163,187,0.9)"; ctx.shadowBlur=26;
+  ctx.fillStyle="#fdf6f3";
+  ctx.fillText(text, 512, 110);
+  const tex = new THREE.CanvasTexture(c);
+  tex.encoding = THREE.sRGBEncoding;
+  const mat = new THREE.SpriteMaterial({ map:tex, transparent:true, depthWrite:false });
+  const spr = new THREE.Sprite(mat);
+  const scale = 0.9 + Math.random()*0.9;
+  spr.scale.set(scale*3.4, scale*0.75, 1);
+  return spr;
+}
+const loveTextGroup = new THREE.Group();
+loveTextGroup.position.set(0,0,universeZ);
+scene.add(loveTextGroup);
+const loveTextData = [];
+CFG.loveMessages.forEach((msg,i)=>{
+  const spr = makeTextSprite(msg);
+  const a = (i/CFG.loveMessages.length)*Math.PI*2;
+  const r = 4.2 + Math.random()*1.6;
+  const y = (Math.random()-0.5)*3.2;
+  spr.position.set(Math.cos(a)*r, y, Math.sin(a)*r);
+  loveTextGroup.add(spr);
+  loveTextData.push({ spr, a, r, y, speed:0.05+Math.random()*0.05 });
+});
+const orbitFlowers = new THREE.Group();
+orbitFlowers.position.set(0,0,universeZ);
+scene.add(orbitFlowers);
+const orbitFlowerData = [];
+for(let i=0;i<10;i++){
+  const f = buildFlower(0.5+Math.random()*0.5, i%2===0?0xe8a3bb:0xf3c9d6);
+  const a = Math.random()*Math.PI*2;
+  const r = 3+Math.random()*2.4;
+  f.position.set(Math.cos(a)*r, (Math.random()-0.5)*3, Math.sin(a)*r);
+  orbitFlowers.add(f);
+  orbitFlowerData.push({ f, a, r, speed:0.04+Math.random()*0.06, y:f.position.y });
+}
+
+/* ---- final scene anchor (composite pulls camera back to origin-ish) ---- */
+const finalAnchor = new THREE.Vector3(0,0.4, universeZ - 9);
+
+/* ============================================================
+   2. MOUSE PARALLAX (subtle, affects heart + universe)
+============================================================ */
+let mouseNX=0, mouseNY=0, mouseTX=0, mouseTY=0;
+window.addEventListener("mousemove", e=>{
+  mouseTX = (e.clientX/innerWidth - 0.5)*2;
+  mouseTY = (e.clientY/innerHeight - 0.5)*2;
+});
+window.addEventListener("touchmove", e=>{
+  if(!e.touches || !e.touches[0]) return;
+  mouseTX = (e.touches[0].clientX/innerWidth - 0.5)*2;
+  mouseTY = (e.touches[0].clientY/innerHeight - 0.5)*2;
+}, {passive:true});
+
+/* ============================================================
+   3. SCROLL PROGRESS -> CAMERA / SCENE STATE
+============================================================ */
+let currentAct = "heart";
+
+const ACTS = [
+  { id:"heart",     start:0.00, end:0.14 },
+  { id:"memories",  start:0.14, end:0.50 },
+  { id:"envelope",  start:0.50, end:0.60 },
+  { id:"letter",    start:0.60, end:0.74 },
+  { id:"universe",  start:0.74, end:0.92 },
+  { id:"final",     start:0.92, end:1.00 }
+];
+function actLocal(id){
+  const a = ACTS.find(x=>x.id===id);
+  const t = THREE.MathUtils.clamp((progress-a.start)/(a.end-a.start), 0, 1);
+  return t;
+}
+function inAct(id){ const a=ACTS.find(x=>x.id===id); return progress>=a.start && progress<=a.end; }
+
+const letterWrap = document.getElementById("letter-wrap");
+const finalWrap = document.getElementById("final-wrap");
+const finalLinesEls = document.querySelectorAll(".final-line");
+CFG.finalLines.forEach((t,i)=>{ if(finalLinesEls[i]) finalLinesEls[i].textContent = t; });
+document.getElementById("letter-body").textContent = CFG.letter;
+const introCue = document.getElementById("intro-cue");
+const rail = document.getElementById("rail");
+const railFill = document.getElementById("rail-fill");
+
+let finalTriggered = false;
+let letterDismissed = false;
+window.__closeLetterCard = function(){
+  letterDismissed = true;
+  letterWrap.classList.remove("show");
+  const storyEl = document.getElementById("story");
+  const total = storyEl.offsetHeight - window.innerHeight;
+  const targetProgress = ACTS.find(a=>a.id==="universe").start + 0.02;
+  window.scrollTo({ top: Math.max(0, total*targetProgress), behavior:"smooth" });
+};
+
+function updateSceneFromProgress(){
+  railFill.style.height = (progress*100).toFixed(1)+"%";
+
+  // ---------- HEART ACT ----------
+  if(progress < ACTS[1].start + 0.03){
+    const t = actLocal("heart");
+    const camZ = THREE.MathUtils.lerp(9, 1.2, t);
+    camera.position.x = THREE.MathUtils.lerp(0,0,t) + mouseNX*0.4;
+    camera.position.y = mouseNY*0.25;
+    camera.position.z = camZ;
+    camera.lookAt(heart.position.x, heart.position.y, heart.position.z);
+    heart.scale.setScalar(THREE.MathUtils.lerp(0.9,1.15,t));
+    heart.visible = true;
+  } else {
+    heart.visible = progress < ACTS[1].start + 0.08;
+  }
+
+  // ---------- MEMORIES ACT ----------
+  if(inAct("memories")){
+    const t = actLocal("memories");
+    const camPos = memCurve.getPointAt(THREE.MathUtils.clamp(t,0,0.995));
+    const lookPos = memCurve.getPointAt(THREE.MathUtils.clamp(t+0.02,0,1));
+    camera.position.set(camPos.x + mouseNX*0.3, camPos.y + mouseNY*0.2, camPos.z);
+    camera.lookAt(lookPos.x, lookPos.y, lookPos.z);
+  } else if(progress > ACTS[1].end){
+    // keep camera continuing near end of curve when moving to envelope
+  }
+
+  // caption tags fade near their polaroid (index-based on memories progress)
+  const memT = actLocal("memories");
+  polaroidGroups.forEach((g,i)=>{
+    const target = (i+0.5)/polaroidGroups.length;
+    const dist = Math.abs(memT-target);
+    const el = document.querySelectorAll(".pg-caption")[i];
+  });
+
+  // ---------- ENVELOPE ACT ----------
+  if(progress >= ACTS[1].end - 0.02 && progress <= ACTS[2].end + 0.02){
+    const t = actLocal("envelope");
+    const camZ = THREE.MathUtils.lerp(memEnd.z-2, envZ+2.6, THREE.MathUtils.clamp((progress-(ACTS[1].end-0.02))/(ACTS[2].end-(ACTS[1].end-0.02)),0,1));
+    camera.position.set(mouseNX*0.15, 0.15+mouseNY*0.1, camZ);
+    camera.lookAt(0,0,envZ);
+    const openT = THREE.MathUtils.clamp((t-0.35)/0.5,0,1);
+    flap.rotation.x = -openT * 2.35;
+    goldSeal.visible = openT < 0.15;
+    letterMesh.visible = openT > 0.55;
+    if(letterMesh.visible){
+      letterMesh.position.z = envZ + 0.15 + (openT-0.55)*3.2;
+      letterMesh.position.y = (openT-0.55)*0.6;
+      letterMesh.material.opacity = 1;
+    }
+  }
+
+  // ---------- LETTER ACT ----------
+  if(inAct("letter") && !letterDismissed){
+    const t = actLocal("letter");
+    camera.position.set(mouseNX*0.1, 0.2+mouseNY*0.08, envZ + 0.6 - t*1.4);
+    camera.lookAt(0,0.1,envZ+2);
+    letterWrap.classList.add("show");
+    letterMesh.visible = false;
+  } else {
+    letterWrap.classList.remove("show");
+    if(!inAct("letter")) letterDismissed = false; // reset once scrolled fully out, in case user scrolls back up later
+  }
+
+  // ---------- UNIVERSE ACT ----------
+  if(inAct("universe") || (progress>ACTS[3].end && progress<ACTS[4].end+0.02)){
+    const t = actLocal("universe");
+    const ang = THREE.MathUtils.lerp(-0.6, Math.PI*1.15, t);
+    const radius = THREE.MathUtils.lerp(6.5, 4.2, Math.min(t*2,1));
+    camera.position.set(
+      portraitGroup.position.x + Math.sin(ang)*radius + mouseNX*0.3,
+      portraitGroup.position.y + Math.sin(t*Math.PI)*0.6 + mouseNY*0.2,
+      portraitGroup.position.z + Math.cos(ang)*radius
+    );
+    camera.lookAt(portraitGroup.position);
+    portraitGroup.rotation.y = Math.sin(t*Math.PI)*0.15;
+  }
+
+  // ---------- FINAL ACT ----------
+  if(inAct("final")){
+    const t = actLocal("final");
+    camera.position.set(
+      THREE.MathUtils.lerp(camera.position.x, finalAnchor.x, 0.06),
+      THREE.MathUtils.lerp(0.3, 0.5, t),
+      THREE.MathUtils.lerp(portraitGroup.position.z+4.2, finalAnchor.z, t)
+    );
+    camera.lookAt(finalAnchor.x, 0.3, finalAnchor.z-3);
+    finalWrap.classList.add("show");
+    if(!finalTriggered && t>0.12){
+      finalTriggered = true;
+      finalLinesEls.forEach((el,i)=>{
+        gsap.delayedCall(0.4+i*0.7, ()=>el.classList.add("reveal"));
+      });
+    }
+  } else {
+    finalWrap.classList.remove("show");
+  }
+
+  currentAct = ACTS.find(a=>progress>=a.start && progress<=a.end)?.id || currentAct;
+}
+
+/* ============================================================
+   4. RENDER LOOP
+============================================================ */
+const clock = new THREE.Clock();
+function animate(){
+  requestAnimationFrame(animate);
+  const t = clock.getElapsedTime();
+  mouseNX += (mouseTX-mouseNX)*0.05;
+  mouseNY += (mouseTY-mouseNY)*0.05;
+
+  updatePetals(t);
+  heart.rotation.y = t*0.25 + mouseNX*0.4;
+  heart.rotation.x = Math.sin(t*0.5)*0.05 + mouseNY*0.15;
+  heart.position.y = Math.sin(t*0.8)*0.08;
+  heartGlow.position.copy(heart.position);
+  updateOrbit(t, 1);
+
+  loveTextData.forEach(d=>{
+    d.a += d.speed*0.01;
+    d.spr.position.set(Math.cos(d.a)*d.r, d.y+Math.sin(t*0.4+d.a)*0.2, Math.sin(d.a)*d.r);
+    d.spr.material.rotation = Math.sin(t*0.2)*0.02;
+  });
+  orbitFlowerData.forEach(d=>{
+    d.a += d.speed*0.01;
+    d.f.position.set(Math.cos(d.a)*d.r, d.y, Math.sin(d.a)*d.r);
+    d.f.rotation.y += 0.01;
+  });
+  distantFlowers.rotation.y = t*0.01;
+
+  polaroidGroups.forEach((g,i)=>{
+    g.position.y += Math.sin(t*0.5+i)*0.0007;
+    g.rotation.z += Math.sin(t*0.3+i)*0.00015;
+  });
+
+  updateSceneFromProgress();
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener("resize", ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+/* expose the scroll-driven story to the gate logic defined earlier */
+window.__scrollTriggerReady = function(){
+  gsap.registerPlugin(ScrollTrigger);
+  ScrollTrigger.create({
+    trigger: "#story",
+    start: "top top",
+    end: "bottom bottom",
+    scrub: 0.6,
+    onUpdate: self => {
+      progress = self.progress;
+      if(progress > 0.02) introCue.classList.remove("show");
+    }
+  });
+};
+
+} catch(err){
+  console.error("3D world failed to initialize, continuing without it:", err);
+  window.__closeLetterCard = function(){
+    window.__letterDismissedFallback = true;
+    document.getElementById("letter-wrap").classList.remove("show");
+    const storyEl = document.getElementById("story");
+    const total = storyEl.offsetHeight - window.innerHeight;
+    window.scrollTo({ top: Math.max(0, total*0.76), behavior:"smooth" });
+  };
+  // Fallback so the site still "works" (scrolls, shows overlays) even if WebGL/3D failed.
+  window.__scrollTriggerReady = function(){
+    if(typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined"){
+      gsap.registerPlugin(ScrollTrigger);
+      ScrollTrigger.create({
+        trigger: "#story", start: "top top", end: "bottom bottom", scrub: 0.6,
+        onUpdate: self => {
+          progress = self.progress;
+          if(progress > 0.02) introCue.classList.remove("show");
+          const letterWrap = document.getElementById("letter-wrap");
+          const finalWrap = document.getElementById("final-wrap");
+          if(progress>0.60 && progress<0.74 && !window.__letterDismissedFallback) letterWrap.classList.add("show"); else letterWrap.classList.remove("show");
+          if(progress>0.92){
+            finalWrap.classList.add("show");
+            document.querySelectorAll(".final-line").forEach(el=>el.classList.add("reveal"));
+          } else finalWrap.classList.remove("show");
+        }
+      });
+    }
+  };
+}
+
+})();
+</script>
+</body>
+</html>

@@ -203,7 +203,6 @@ Marcell`,
     text-shadow:0 0 20px rgba(232,163,187,.5);
   }
   .cd-label{ font-size:11px; letter-spacing:.25em; text-transform:uppercase; color:var(--dusty); margin-top:6px; }
-  .skip-hint{ margin-top:38px; font-size:12px; letter-spacing:.15em; color:rgba(253,246,243,.55); }
 
   /* ---------- intro cue over heart ---------- */
   #intro-cue{
@@ -299,6 +298,171 @@ Marcell`,
     .cd-grid{ gap:12px; }
     #rail{ display:none; }
   }
+  /* ---------- responsive layout: phone + tablet ---------- */
+  @media (max-width:1024px){
+    .overlay{
+      padding:clamp(18px,4vw,32px);
+    }
+    .headline{
+      font-size:clamp(22px,4.5vw,32px);
+      margin-bottom:clamp(24px,4vw,34px);
+    }
+    #password-input{
+      width:min(220px,62vw);
+      font-size:24px;
+    }
+    .cd-grid{
+      gap:clamp(10px,3vw,24px);
+    }
+    .cd-unit{
+      min-width:clamp(54px,12vw,70px);
+    }
+    .cd-num{
+      font-size:clamp(28px,7vw,50px);
+    }
+    .letter-paper{
+      width:min(680px,90vw);
+      max-height:80svh;
+      padding:clamp(24px,5vw,46px);
+    }
+    .letter-body{
+      font-size:clamp(16px,2.3vw,18px);
+      line-height:1.75;
+    }
+    #music-btn{
+      right:max(14px, env(safe-area-inset-right));
+      bottom:max(14px, env(safe-area-inset-bottom));
+    }
+  }
+
+  @media (max-width:720px){
+    html,body{
+      min-height:100%;
+      -webkit-text-size-adjust:100%;
+      overscroll-behavior-x:none;
+    }
+    .overlay{
+      padding:20px 18px;
+      min-height:100svh;
+    }
+    .eyebrow{
+      font-size:10px;
+      letter-spacing:.24em;
+      margin-bottom:14px;
+    }
+    .headline{
+      font-size:clamp(21px,7vw,29px);
+      margin-bottom:24px;
+    }
+    #password-form{
+      gap:14px;
+    }
+    #password-input{
+      width:min(210px,68vw);
+      font-size:22px;
+      letter-spacing:.5em;
+      padding:9px 0;
+    }
+    .enter-btn{
+      padding:10px 24px;
+      min-height:42px;
+    }
+    #countdown-screen .cd-sub{
+      font-size:15px;
+      margin-bottom:22px;
+      max-width:290px;
+    }
+    #countdown-screen .cd-grid{
+      width:100%;
+      justify-content:center;
+      gap:clamp(6px,3vw,14px);
+    }
+    #countdown-screen .cd-unit{
+      min-width:clamp(48px,18vw,66px);
+    }
+    #countdown-screen .cd-num{
+      font-size:clamp(25px,9vw,40px);
+    }
+    .cd-label{
+      font-size:9px;
+      letter-spacing:.16em;
+      margin-top:4px;
+    }
+    #intro-cue{
+      bottom:max(5vh, calc(env(safe-area-inset-bottom) + 28px));
+      padding:0 18px;
+    }
+    #intro-cue .for-someone{
+      font-size:27px;
+    }
+    #intro-cue .scroll-cta{
+      font-size:10px;
+      letter-spacing:.22em;
+    }
+    .letter-paper{
+      width:calc(100vw - 28px);
+      max-height:82svh;
+      border-radius:8px;
+      padding:34px 20px 24px;
+    }
+    .letter-dear{
+      font-size:30px;
+      margin-bottom:14px;
+    }
+    .letter-body{
+      font-size:16px;
+      line-height:1.7;
+    }
+    .letter-scroll-hint{
+      font-size:9px;
+      letter-spacing:.14em;
+    }
+    .letter-close{
+      top:9px;
+      right:9px;
+      width:32px;
+      height:32px;
+    }
+    .final-line:nth-child(2){
+      font-size:clamp(14px,4vw,19px);
+      letter-spacing:.16em;
+    }
+    .final-line:nth-child(3){
+      font-size:11px;
+      letter-spacing:.2em;
+    }
+    .final-line:nth-child(4){
+      font-size:13px;
+      padding:0 18px;
+      text-align:center;
+    }
+  }
+
+  @media (max-width:420px){
+    #countdown-screen .cd-grid{
+      gap:4px;
+    }
+    #countdown-screen .cd-unit{
+      min-width:45px;
+    }
+    #countdown-screen .cd-num{
+      font-size:25px;
+    }
+    .cd-label{
+      font-size:8px;
+      letter-spacing:.1em;
+    }
+    .letter-paper{
+      width:calc(100vw - 20px);
+      max-height:84svh;
+      padding-left:17px;
+      padding-right:17px;
+    }
+    .letter-body{
+      font-size:15.5px;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -331,8 +495,7 @@ Marcell`,
     <div class="cd-unit"><div class="cd-num" id="cd-mins">00</div><div class="cd-label">Minutes</div></div>
     <div class="cd-unit"><div class="cd-num" id="cd-secs">00</div><div class="cd-label">Seconds</div></div>
   </div>
-
-  <div class="skip-hint" id="skip-countdown" data-cursor="soft" style="cursor:pointer; margin-top:10px; opacity:.6;" onclick="window.doSkipCountdown()">skip countdown (preview) →</div>
+  <div class="skip-hint" id="skip-time" data-cursor="soft" style="cursor:pointer; margin-top:10px; opacity:.6;" onclick="window.doSkipCountdown()">skip time (preview) →</div>
 </div>
 
 <!-- INTRO CUE over heart -->
@@ -374,24 +537,6 @@ Marcell`,
 <div id="rail"><div id="rail-fill"></div></div>
 <audio id="bg-audio" loop preload="none"></audio>
 
-<!-- URL-based quick preview: ?skip=1 skips password, ?skip=2 skips password + countdown -->
-<script>
-(function(){
-  if(/[?&]skip=1/.test(location.search) || /[?&]skip=2/.test(location.search)){
-    window.doUnlockGate();
-  }
-  if(/[?&]skip=2/.test(location.search)){
-    var tries = 0;
-    var poll = setInterval(function(){
-      tries++;
-      if(document.getElementById("countdown-screen").classList.contains("active")){
-        clearInterval(poll);
-        window.doSkipCountdown();
-      } else if(tries>80){ clearInterval(poll); }
-    }, 100);
-  }
-})();
-</script>
 
 <!-- ======================= LIBS ======================= -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" crossorigin="anonymous"></script>
@@ -405,6 +550,7 @@ Marcell`,
 const CFG = window.SITE_CONFIG;
 const isTouch = window.matchMedia("(pointer:coarse)").matches;
 const isMobile = window.innerWidth < 820 || isTouch;
+  const isTablet = window.innerWidth >= 720 && window.innerWidth <= 1200;
 
 /* ============================================================
    0. CUSTOM CURSOR + LOVE TRAIL
@@ -548,7 +694,8 @@ function countdownCompleteTransition(){
     startMainExperience();
   }, 1300);
 }
-window.__skipCountdownNow = function(){
+
+window.doSkipCountdown = function(){
   clearInterval(countdownInterval);
   countdownCompleteTransition();
 };
@@ -1104,10 +1251,16 @@ function animate(){
 }
 animate();
 
+let resizeTimer;
 window.addEventListener("resize", ()=>{
-  camera.aspect = innerWidth/innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(()=>{
+    camera.aspect = innerWidth/innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setPixelRatio(Math.min(devicePixelRatio, (innerWidth < 820 || window.matchMedia("(pointer:coarse)").matches) ? 1.5 : 2));
+    renderer.setSize(innerWidth, innerHeight);
+    ScrollTrigger && ScrollTrigger.refresh && ScrollTrigger.refresh();
+  }, 80);
 });
 
 /* expose the scroll-driven story to the gate logic defined earlier */
